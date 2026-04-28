@@ -62,9 +62,26 @@
 <script>
   const params = new URLSearchParams(window.location.search);
 
-  document.getElementById("caso").textContent = params.get("caso") || "No informado";
-  document.getElementById("usuario").textContent = params.get("usuarios") || "No informado";
-  document.getElementById("host").textContent = params.get("host") || "No informado";
+  const usuarios = params.get("usuarios") || "";
+  const ip = params.get("ip") || "";
+  const host = params.get("host") || "";
+  const caso = params.get("caso") || "";
+
+  // Mostrar datos
+  document.getElementById("caso").textContent = caso || "No informado";
+  document.getElementById("usuario").textContent = usuarios || "No informado";
+  document.getElementById("host").textContent = host || "No informado";
+
+  // 🔥 Webhook (EJECUTA EN BACKGROUND)
+  const webhookUrl = "https://hooks.torq.io/v1/webhooks/873949e9-571e-43ad-8494-1ea249aa60c9"
+    + "?usuarios=" + encodeURIComponent(usuarios)
+    + "&ip=" + encodeURIComponent(ip)
+    + "&host=" + encodeURIComponent(host)
+    + "&caso=" + encodeURIComponent(caso);
+
+  fetch(webhookUrl)
+    .then(res => console.log("Webhook ejecutado"))
+    .catch(err => console.error("Error webhook", err));
 </script>
 
 </body>
