@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Confirmación de Desbloqueo</title>
+
+<style>
+body{
+  margin:0;
+  padding:40px;
+  background:#f4f7f9;
+  font-family:Arial;
+  text-align:center;
+}
+
+.card{
+  max-width:600px;
+  margin:auto;
+  background:#ffffff;
+  padding:40px;
+  border-radius:10px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.1);
+}
+
+h2{
+  color:#c62828;
+}
+
+.btn{
+  background:#d1d5db;
+  color:#6b7280;
+  padding:12px 18px;
+  border:none;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:not-allowed;
+}
+
+.btn.active{
+  background:#c62828;
+  color:white;
+  cursor:pointer;
+}
+
+.checkbox{
+  margin-top:20px;
+  margin-bottom:20px;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>Confirmación de Desbloqueo</h2>
+
+<p>
+Antes de ejecutar la acción, debes confirmar la validación.
+</p>
+
+<p>
+Caso: <b id="caso"></b><br>
+Usuario: <b id="usuario"></b><br>
+Host: <b id="host"></b>
+</p>
+
+<div class="checkbox">
+  <input type="checkbox" id="confirmacion">
+  <label for="confirmacion">
+    Confirmo que validé la automatización
+  </label>
+</div>
+
+<button id="btn" class="btn" disabled>
+  Ejecutar Desbloqueo
+</button>
+
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+
+const usuarios = params.get("usuarios") || "";
+const ip = params.get("ip") || "";
+const host = params.get("host") || "";
+const caso = params.get("caso") || "";
+const cdu = params.get("cdu") || "";
+
+document.getElementById("usuario").textContent = usuarios || "N/A";
+document.getElementById("host").textContent = host || "N/A";
+document.getElementById("caso").textContent = caso || "N/A";
+
+const checkbox = document.getElementById("confirmacion");
+const btn = document.getElementById("btn");
+
+checkbox.addEventListener("change", () => {
+  if (checkbox.checked) {
+    btn.disabled = false;
+    btn.classList.add("active");
+  } else {
+    btn.disabled = true;
+    btn.classList.remove("active");
+  }
+});
+
+btn.addEventListener("click", () => {
+
+  const url =
+    "https://hooks.torq.io/v1/webhooks/873949e9-571e-43ad-8494-1ea249aa60c9"
+    + "?usuarios=" + encodeURIComponent(usuarios)
+    + "&ip=" + encodeURIComponent(ip)
+    + "&host=" + encodeURIComponent(host)
+    + "&caso=" + encodeURIComponent(caso)
+    + "&cdu=" + encodeURIComponent(cdu);
+
+  btn.innerText = "Ejecutando...";
+  btn.disabled = true;
+
+  fetch(url)
+    .then(() => {
+      document.body.innerHTML = "<h2>✅ Desbloqueo ejecutado correctamente</h2>";
+    })
+    .catch(() => {
+      document.body.innerHTML = "<h2>❌ Error al ejecutar</h2>";
+    });
+
+});
+</script>
+
+</body>
+</html>
