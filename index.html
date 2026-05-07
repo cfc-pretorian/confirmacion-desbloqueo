@@ -41,6 +41,12 @@ text-align:left;
 font-size:14px;
 line-height:1.8;
 }
+
+.redirect{
+margin-top:20px;
+font-weight:bold;
+color:#c62828;
+}
 </style>
 </head>
 <body>
@@ -58,7 +64,8 @@ El proceso de desbloqueo será validado y ejecutado por la plataforma de automat
 </p>
 
 <p>
-<strong>Redirigiendo automáticamente...</strong>
+<strong>Debe esperar el correo de confirmación</strong> para verificar que la acción
+ha sido aplicada correctamente.
 </p>
 
 <div class="info">
@@ -66,6 +73,10 @@ Caso: <strong id="caso"></strong><br>
 Usuario: <strong id="usuario"></strong><br>
 Host: <strong id="host"></strong><br>
 CDU: <strong id="cdu"></strong>
+</div>
+
+<div id="redirect-msg" class="redirect">
+Redirigiendo en 10 segundos...
 </div>
 
 </div>
@@ -105,10 +116,19 @@ const webhookUrl =
 
 console.log("Redirigiendo a Torq:", webhookUrl);
 
-// Esperar 2 segundos y redirigir
-setTimeout(() => {
+// Contador regresivo
+let segundos = 10;
+const msg = document.getElementById("redirect-msg");
+
+const countdown = setInterval(() => {
+segundos--;
+msg.innerHTML = `Redirigiendo en ${segundos} segundos...`;
+
+if(segundos <= 0){
+clearInterval(countdown);
 window.location.href = webhookUrl;
-}, 2000);
+}
+}, 1000);
 
 </script>
 
