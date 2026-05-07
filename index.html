@@ -48,6 +48,16 @@ font-weight:bold;
 color:#c62828;
 font-size:16px;
 }
+
+.ok{
+color:#2e7d32;
+font-weight:bold;
+}
+
+.error{
+color:#c62828;
+font-weight:bold;
+}
 </style>
 </head>
 <body>
@@ -78,7 +88,7 @@ Jefatura: <strong id="jefe"></strong>
 </div>
 
 <div id="redirect-msg" class="redirect">
-Redirigiendo en 10 segundos...
+Procesando solicitud...
 </div>
 
 </div>
@@ -104,31 +114,53 @@ document.getElementById("host").textContent = host || "No informado";
 document.getElementById("cdu").textContent = cdu || "No informado";
 document.getElementById("jefe").textContent = jefe;
 
-// URL webhook Torq
-const webhookUrl =
-"https://hooks.torq.io/v1/webhooks/873949e9-571e-43ad-8494-1ea249aa60c9"
-+ "?usuarios=" + encodeURIComponent(usuarios)
-+ "&ip=" + encodeURIComponent(ip)
-+ "&host=" + encodeURIComponent(host)
-+ "&caso=" + encodeURIComponent(caso)
-+ "&cdu=" + encodeURIComponent(cdu)
-+ "&herramienta=" + encodeURIComponent(herramienta)
-+ "&timestamp=" + encodeURIComponent(timestamp)
-+ "&jefe=" + encodeURIComponent(jefe);
+// Payload
+const payload = {
+usuarios,
+ip,
+host,
+caso,
+cdu,
+herramienta,
+timestamp,
+jefe
+};
 
-console.log("Redirección a Torq:", webhookUrl);
+console.log("Payload enviado a Torq:", payload);
 
-// Cuenta regresiva
+// Contador 10 segundos
 let segundos = 10;
 const msg = document.getElementById("redirect-msg");
 
 const countdown = setInterval(() => {
 
-msg.innerHTML = `Redirigiendo en ${segundos} segundos...`;
+msg.innerHTML = `Enviando solicitud a Torq en ${segundos} segundos...`;
 
 if(segundos <= 0){
+
 clearInterval(countdown);
-window.location.href = webhookUrl;
+
+fetch("https://hooks.torq.io/v1/webhooks/873949e9-571e-43ad-8494-1ea249aa60c9", {
+method: "POST",
+headers: {
+"Content-Type": "application/json"
+},
+body: JSON.stringify(payload)
+})
+.then(response => {
+
+if(response.ok){
+msg.innerHTML = `<span class="ok">✅ Solicitud enviada correctamente a Torq</span>`;
+}else{
+msg.innerHTML = `<span class="error">⛔ Torq respondió con error (${response.status})</span>`;
+}
+
+})
+.catch(error => {
+console.error(error);
+msg.innerHTML = `<span class="error">⛔ Error de conexión con Torq</span>`;
+});
+
 }
 
 segundos--;
