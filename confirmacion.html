@@ -110,8 +110,10 @@ const caso = urlParams.get("caso") || "";
 const cdu = urlParams.get("cdu") || "";
 const herramienta = urlParams.get("herramienta") || "";
 const timestamp = urlParams.get("timestamp") || "";
+const jefe = urlParams.get("jefe") || "N/A";
 
 console.log("Herramienta recibida:", herramienta);
+console.log("Jefe recibido:", jefe);
 
 // Elementos
 const check = document.getElementById("check");
@@ -120,7 +122,7 @@ const status = document.getElementById("status");
 const controls = document.getElementById("controls");
 const details = document.getElementById("details");
 
-// Mostrar info (sin herramienta)
+// Mostrar info
 details.innerHTML = `
 <strong>Usuario:</strong> ${usuario || "No informado"}<br>
 <strong>Host:</strong> ${host || "No informado"}<br>
@@ -149,14 +151,13 @@ if(isNaN(eventDate.getTime())){
 throw new Error("Timestamp inválido");
 }
 
-// Expira en 45 minutos
+// Expira en 45 min
 const expirationDate = new Date(
 eventDate.getTime() + (45 * 60 * 1000)
 );
 
 const now = new Date();
 
-// Formato manual
 const expDay = expirationDate.getDate().toString().padStart(2,'0');
 const expMonth = (expirationDate.getMonth()+1).toString().padStart(2,'0');
 const expYear = expirationDate.getFullYear();
@@ -191,7 +192,6 @@ btn.disabled = !check.checked;
 btn.classList.toggle("active", check.checked);
 });
 
-// REDIRECCIÓN CORREGIDA
 btn.onclick = () => {
 
 const redirectUrl =
@@ -202,7 +202,8 @@ const redirectUrl =
 + "&caso=" + encodeURIComponent(caso)
 + "&cdu=" + encodeURIComponent(cdu)
 + "&herramienta=" + encodeURIComponent(herramienta)
-+ "&timestamp=" + encodeURIComponent(timestamp);
++ "&timestamp=" + encodeURIComponent(timestamp)
++ "&jefe=" + encodeURIComponent(jefe);
 
 window.location.href = redirectUrl;
 
