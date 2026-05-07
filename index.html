@@ -121,17 +121,28 @@ const webhookUrl =
 console.log("Redirigiendo a Torq:", webhookUrl);
 
 // Contador regresivo
+// Contador regresivo
 let segundos = 10;
 const msg = document.getElementById("redirect-msg");
 
 const countdown = setInterval(() => {
-segundos--;
+
 msg.innerHTML = `Redirigiendo en ${segundos} segundos...`;
 
 if(segundos <= 0){
 clearInterval(countdown);
-window.location.href = webhookUrl;
+
+console.log("Redirigiendo a:", webhookUrl);
+
+// pequeña pausa para asegurar render
+setTimeout(() => {
+window.location.assign(webhookUrl);
+}, 300);
+
 }
+
+segundos--;
+
 }, 1000);
 
 </script>
