@@ -43,9 +43,10 @@ line-height:1.8;
 }
 
 .redirect{
-margin-top:20px;
+margin-top:25px;
 font-weight:bold;
 color:#c62828;
+font-size:16px;
 }
 </style>
 </head>
@@ -77,14 +78,14 @@ Jefatura: <strong id="jefe"></strong>
 </div>
 
 <div id="redirect-msg" class="redirect">
-Procesando solicitud...
+Redirigiendo en 10 segundos...
 </div>
 
 </div>
 
 <script>
 
-// Parámetros
+// Leer parámetros
 const params = new URLSearchParams(window.location.search);
 
 const usuarios = params.get("usuarios") || "";
@@ -103,58 +104,36 @@ document.getElementById("host").textContent = host || "No informado";
 document.getElementById("cdu").textContent = cdu || "No informado";
 document.getElementById("jefe").textContent = jefe;
 
-// Payload
-const payload = {
-usuarios,
-ip,
-host,
-caso,
-cdu,
-herramienta,
-timestamp,
-jefe
-};
+// URL webhook Torq
+const webhookUrl =
+"https://hooks.torq.io/v1/webhooks/873949e9-571e-43ad-8494-1ea249aa60c9"
++ "?usuarios=" + encodeURIComponent(usuarios)
++ "&ip=" + encodeURIComponent(ip)
++ "&host=" + encodeURIComponent(host)
++ "&caso=" + encodeURIComponent(caso)
++ "&cdu=" + encodeURIComponent(cdu)
++ "&herramienta=" + encodeURIComponent(herramienta)
++ "&timestamp=" + encodeURIComponent(timestamp)
++ "&jefe=" + encodeURIComponent(jefe);
 
-console.log("Payload enviado a Torq:", payload);
+console.log("Redirección a Torq:", webhookUrl);
 
-// Enviar a Torq
-fetch("https://hooks.torq.io/v1/webhooks/873949e9-571e-43ad-8494-1ea249aa60c9", {
-method: "POST",
-headers: {
-"Content-Type": "application/json"
-},
-body: JSON.stringify(payload)
-})
-.then(response => {
-
-if(response.ok){
-
+// Cuenta regresiva
 let segundos = 10;
 const msg = document.getElementById("redirect-msg");
 
-msg.innerHTML = `Solicitud enviada correctamente. Cerrando en ${segundos}s`;
-
 const countdown = setInterval(() => {
-segundos--;
-msg.innerHTML = `Solicitud enviada correctamente. Cerrando en ${segundos}s`;
+
+msg.innerHTML = `Redirigiendo en ${segundos} segundos...`;
 
 if(segundos <= 0){
 clearInterval(countdown);
-window.close();
-}
-},1000);
-
-}else{
-document.getElementById("redirect-msg").innerHTML =
-"Error al enviar solicitud a Torq";
+window.location.href = webhookUrl;
 }
 
-})
-.catch(error => {
-console.error(error);
-document.getElementById("redirect-msg").innerHTML =
-"Error de conexión con Torq";
-});
+segundos--;
+
+}, 1000);
 
 </script>
 
