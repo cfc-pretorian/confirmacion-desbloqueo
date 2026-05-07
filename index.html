@@ -82,7 +82,7 @@ const caso = params.get("caso") || "";
 const cdu = params.get("cdu") || "";
 const herramienta = params.get("herramienta") || "";
 const timestamp = params.get("timestamp") || "";
-const jefe = params.get("jefe") || "N/A";
+//const jefe = params.get("jefe") || "N/A";
 
 // Debug
 console.log("Herramienta enviada a Torq:", herramienta);
@@ -103,7 +103,7 @@ const webhookUrl =
 + "&cdu=" + encodeURIComponent(cdu)
 + "&herramienta=" + encodeURIComponent(herramienta)
 + "&timestamp=" + encodeURIComponent(timestamp);
-+ "&jefe=" + encodeURIComponent(jefe);
+//+ "&jefe=" + encodeURIComponent(jefe);
 
 console.log("Redirigiendo a Torq:", webhookUrl);
 
