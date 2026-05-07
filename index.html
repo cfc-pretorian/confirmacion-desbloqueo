@@ -31,6 +31,16 @@ color:#374151;
 font-size:14px;
 line-height:1.6;
 }
+
+.info{
+margin-top:20px;
+background:#f8f9fa;
+padding:15px;
+border-radius:8px;
+text-align:left;
+font-size:14px;
+line-height:1.8;
+}
 </style>
 </head>
 <body>
@@ -52,22 +62,20 @@ El proceso de desbloqueo será validado y ejecutado por la plataforma de automat
 ha sido aplicada correctamente.
 </p>
 
-<br>
-
-<p>
+<div class="info">
 Caso: <strong id="caso"></strong><br>
 Usuario: <strong id="usuario"></strong><br>
 Host: <strong id="host"></strong><br>
 CDU: <strong id="cdu"></strong>
-</p>
+</div>
 
 </div>
 
 <script>
 
+// Leer parámetros
 const params = new URLSearchParams(window.location.search);
 
-// Obtener todos los parámetros
 const usuarios = params.get("usuarios") || "";
 const ip = params.get("ip") || "";
 const host = params.get("host") || "";
@@ -82,24 +90,37 @@ document.getElementById("usuario").textContent = usuarios || "No informado";
 document.getElementById("host").textContent = host || "No informado";
 document.getElementById("cdu").textContent = cdu || "No informado";
 
-// Webhook Torq
-const webhookUrl =
-"https://hooks.torq.io/v1/webhooks/873949e9-571e-43ad-8494-1ea249aa60c9"
-+ "?usuarios=" + encodeURIComponent(usuarios)
-+ "&ip=" + encodeURIComponent(ip)
-+ "&host=" + encodeURIComponent(host)
-+ "&caso=" + encodeURIComponent(caso)
-+ "&cdu=" + encodeURIComponent(cdu)
-+ "&herramienta=" + encodeURIComponent(herramienta)
-+ "&timestamp=" + encodeURIComponent(timestamp);
+// Payload completo
+const payload = {
+usuarios,
+ip,
+host,
+caso,
+cdu,
+herramienta,
+timestamp
+};
 
-// Ejecutar webhook
-fetch(webhookUrl)
-.then(res => {
-console.log("Webhook ejecutado");
-console.log(webhookUrl);
+console.log("Payload enviado a Torq:", payload);
+
+// Enviar webhook
+fetch("https://hooks.torq.io/v1/webhooks/873949e9-571e-43ad-8494-1ea249aa60c9", {
+method: "POST",
+headers: {
+"Content-Type": "application/json"
+},
+body: JSON.stringify(payload)
 })
-.catch(err => console.error("Error webhook", err));
+.then(response => {
+if(response.ok){
+console.log("Webhook ejecutado correctamente");
+}else{
+console.error("Torq respondió con error:", response.status);
+}
+})
+.catch(error => {
+console.error("Error enviando webhook:", error);
+});
 
 </script>
 
