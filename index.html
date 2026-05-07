@@ -73,17 +73,18 @@ Caso: <strong id="caso"></strong><br>
 Usuario: <strong id="usuario"></strong><br>
 Host: <strong id="host"></strong><br>
 CDU: <strong id="cdu"></strong><br>
+Jefatura: <strong id="jefe"></strong>
 </div>
 
 <div id="redirect-msg" class="redirect">
-Redirigiendo en 10 segundos...
+Procesando solicitud...
 </div>
 
 </div>
 
 <script>
 
-// Leer parámetros
+// Parámetros
 const params = new URLSearchParams(window.location.search);
 
 const usuarios = params.get("usuarios") || "";
@@ -95,10 +96,6 @@ const herramienta = params.get("herramienta") || "";
 const timestamp = params.get("timestamp") || "";
 const jefe = params.get("jefe") || "N/A";
 
-// Debug
-console.log("Herramienta enviada a Torq:", herramienta);
-console.log("Jefatura enviada a Torq:", jefe);
-
 // Mostrar datos
 document.getElementById("caso").textContent = caso || "No informado";
 document.getElementById("usuario").textContent = usuarios || "No informado";
@@ -106,44 +103,58 @@ document.getElementById("host").textContent = host || "No informado";
 document.getElementById("cdu").textContent = cdu || "No informado";
 document.getElementById("jefe").textContent = jefe;
 
-// Construir URL webhook
-const webhookUrl =
-"https://hooks.torq.io/v1/webhooks/873949e9-571e-43ad-8494-1ea249aa60c9"
-+ "?usuarios=" + encodeURIComponent(usuarios)
-+ "&ip=" + encodeURIComponent(ip)
-+ "&host=" + encodeURIComponent(host)
-+ "&caso=" + encodeURIComponent(caso)
-+ "&cdu=" + encodeURIComponent(cdu)
-+ "&herramienta=" + encodeURIComponent(herramienta)
-+ "&timestamp=" + encodeURIComponent(timestamp)
-+ "&jefe=" + encodeURIComponent(jefe);
+// Payload
+const payload = {
+usuarios,
+ip,
+host,
+caso,
+cdu,
+herramienta,
+timestamp,
+jefe
+};
 
-console.log("Redirigiendo a Torq:", webhookUrl);
+console.log("Payload enviado a Torq:", payload);
 
-// Contador regresivo
-// Contador regresivo
+// Enviar a Torq
+fetch("https://hooks.torq.io/v1/webhooks/873949e9-571e-43ad-8494-1ea249aa60c9", {
+method: "POST",
+headers: {
+"Content-Type": "application/json"
+},
+body: JSON.stringify(payload)
+})
+.then(response => {
+
+if(response.ok){
+
 let segundos = 10;
 const msg = document.getElementById("redirect-msg");
 
-const countdown = setInterval(() => {
+msg.innerHTML = `Solicitud enviada correctamente. Cerrando en ${segundos}s`;
 
-msg.innerHTML = `Redirigiendo en ${segundos} segundos...`;
+const countdown = setInterval(() => {
+segundos--;
+msg.innerHTML = `Solicitud enviada correctamente. Cerrando en ${segundos}s`;
 
 if(segundos <= 0){
 clearInterval(countdown);
+window.close();
+}
+},1000);
 
-console.log("Redirigiendo a:", webhookUrl);
-
-// pequeña pausa para asegurar render
-setTimeout(() => {
-window.location.assign(webhookUrl);
-}, 300);
-
+}else{
+document.getElementById("redirect-msg").innerHTML =
+"Error al enviar solicitud a Torq";
 }
 
-segundos--;
-
-}, 1000);
+})
+.catch(error => {
+console.error(error);
+document.getElementById("redirect-msg").innerHTML =
+"Error de conexión con Torq";
+});
 
 </script>
 
