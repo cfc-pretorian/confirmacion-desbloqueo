@@ -131,8 +131,7 @@ if(timestamp){
 try{
 
 // Limpiar timestamp Torq
-const cleanTimestamp = timestamp.split(".")[0] + "Z";
-
+const cleanTimestamp = timestamp.split(".")[0];
 const eventDate = new Date(cleanTimestamp);
 
 if(isNaN(eventDate.getTime())){
