@@ -1,87 +1,106 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Solicitud enviada</title>
-  <style>
-    body{
-      margin:0;
-      padding:40px;
-      background:#f4f7f9;
-      font-family:'Segoe UI', Arial, sans-serif;
-      text-align:center;
-    }
+<meta charset="UTF-8">
+<title>Solicitud enviada</title>
 
-    .card{
-      max-width:600px;
-      margin:auto;
-      background:#ffffff;
-      padding:40px;
-      border-radius:10px;
-      box-shadow:0 8px 24px rgba(15,23,42,0.08);
-    }
+<style>
+body{
+margin:0;
+padding:40px;
+background:#f4f7f9;
+font-family:'Segoe UI', Arial, sans-serif;
+text-align:center;
+}
 
-    h2{
-      color:#f39c12;
-    }
+.card{
+max-width:600px;
+margin:auto;
+background:#ffffff;
+padding:40px;
+border-radius:10px;
+box-shadow:0 8px 24px rgba(15,23,42,0.08);
+}
 
-    p{
-      color:#374151;
-      font-size:14px;
-      line-height:1.6;
-    }
-  </style>
+h2{
+color:#f39c12;
+}
+
+p{
+color:#374151;
+font-size:14px;
+line-height:1.6;
+}
+</style>
 </head>
 <body>
 
 <div class="card">
-  <h2>⚠️ Solicitud de desbloqueo enviada</h2>
 
-  <p>
-    La ejecución de la acción ha sido <strong>solicitada correctamente</strong>.
-  </p>
+<h2>⚠️ Solicitud de desbloqueo enviada</h2>
 
-  <p>
-    El proceso de desbloqueo será validado y ejecutado por la plataforma de automatización.
-  </p>
+<p>
+La ejecución de la acción ha sido <strong>solicitada correctamente</strong>.
+</p>
 
-  <p>
-    <strong>Debe esperar el correo de confirmación</strong> para verificar que el usuario o activo
-    ha sido efectivamente desbloqueado.
-  </p>
+<p>
+El proceso de desbloqueo será validado y ejecutado por la plataforma de automatización.
+</p>
 
-  <br>
+<p>
+<strong>Debe esperar el correo de confirmación</strong> para verificar que la acción
+ha sido aplicada correctamente.
+</p>
 
-  <p>
-    Caso: <strong id="caso"></strong><br>
-    Usuario: <strong id="usuario"></strong><br>
-    Host: <strong id="host"></strong>
-  </p>
+<br>
+
+<p>
+Caso: <strong id="caso"></strong><br>
+Usuario: <strong id="usuario"></strong><br>
+Host: <strong id="host"></strong><br>
+CDU: <strong id="cdu"></strong>
+</p>
+
 </div>
 
 <script>
-  const params = new URLSearchParams(window.location.search);
 
-  const usuarios = params.get("usuarios") || "";
-  const ip = params.get("ip") || "";
-  const host = params.get("host") || "";
-  const caso = params.get("caso") || "";
+const params = new URLSearchParams(window.location.search);
 
-  // Mostrar datos
-  document.getElementById("caso").textContent = caso || "No informado";
-  document.getElementById("usuario").textContent = usuarios || "No informado";
-  document.getElementById("host").textContent = host || "No informado";
+// Obtener todos los parámetros
+const usuarios = params.get("usuarios") || "";
+const ip = params.get("ip") || "";
+const host = params.get("host") || "";
+const caso = params.get("caso") || "";
+const cdu = params.get("cdu") || "";
+const herramienta = params.get("herramienta") || "";
+const timestamp = params.get("timestamp") || "";
 
-  // 🔥 Webhook (EJECUTA EN BACKGROUND)
-  const webhookUrl = "https://hooks.torq.io/v1/webhooks/873949e9-571e-43ad-8494-1ea249aa60c9"
-    + "?usuarios=" + encodeURIComponent(usuarios)
-    + "&ip=" + encodeURIComponent(ip)
-    + "&host=" + encodeURIComponent(host)
-    + "&caso=" + encodeURIComponent(caso);
+// Mostrar datos
+document.getElementById("caso").textContent = caso || "No informado";
+document.getElementById("usuario").textContent = usuarios || "No informado";
+document.getElementById("host").textContent = host || "No informado";
+document.getElementById("cdu").textContent = cdu || "No informado";
 
-  fetch(webhookUrl)
-    .then(res => console.log("Webhook ejecutado"))
-    .catch(err => console.error("Error webhook", err));
+// Webhook Torq
+const webhookUrl =
+"https://hooks.torq.io/v1/webhooks/873949e9-571e-43ad-8494-1ea249aa60c9"
++ "?usuarios=" + encodeURIComponent(usuarios)
++ "&ip=" + encodeURIComponent(ip)
++ "&host=" + encodeURIComponent(host)
++ "&caso=" + encodeURIComponent(caso)
++ "&cdu=" + encodeURIComponent(cdu)
++ "&herramienta=" + encodeURIComponent(herramienta)
++ "&timestamp=" + encodeURIComponent(timestamp);
+
+// Ejecutar webhook
+fetch(webhookUrl)
+.then(res => {
+console.log("Webhook ejecutado");
+console.log(webhookUrl);
+})
+.catch(err => console.error("Error webhook", err));
+
 </script>
 
 </body>
