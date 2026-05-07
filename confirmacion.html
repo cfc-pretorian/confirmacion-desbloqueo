@@ -103,12 +103,13 @@ Continuar
 // Leer parámetros
 const urlParams = new URLSearchParams(window.location.search);
 
-const usuario = urlParams.get("usuarios") || "N/A";
-const host = urlParams.get("host") || "N/A";
-const caso = urlParams.get("caso") || "N/A";
-const cdu = urlParams.get("cdu") || "N/A";
-const herramienta = urlParams.get("herramienta") || "N/A";
-const timestamp = urlParams.get("timestamp");
+const usuario = urlParams.get("usuarios") || "";
+const ip = urlParams.get("ip") || "";
+const host = urlParams.get("host") || "";
+const caso = urlParams.get("caso") || "";
+const cdu = urlParams.get("cdu") || "";
+const herramienta = urlParams.get("herramienta") || "";
+const timestamp = urlParams.get("timestamp") || "";
 
 // Elementos
 const check = document.getElementById("check");
@@ -117,12 +118,12 @@ const status = document.getElementById("status");
 const controls = document.getElementById("controls");
 const details = document.getElementById("details");
 
-// Mostrar info
+// Mostrar info (sin herramienta)
 details.innerHTML = `
-<strong>Usuario:</strong> ${usuario}<br>
-<strong>Host:</strong> ${host}<br>
-<strong>Caso:</strong> ${caso}<br>
-<strong>CDU:</strong> ${cdu}
+<strong>Usuario:</strong> ${usuario || "No informado"}<br>
+<strong>Host:</strong> ${host || "No informado"}<br>
+<strong>Caso:</strong> ${caso || "No informado"}<br>
+<strong>CDU:</strong> ${cdu || "No informado"}
 `;
 
 if(timestamp){
@@ -146,14 +147,14 @@ if(isNaN(eventDate.getTime())){
 throw new Error("Timestamp inválido");
 }
 
-// Expira en 45 min
+// Expira en 45 minutos
 const expirationDate = new Date(
 eventDate.getTime() + (45 * 60 * 1000)
 );
 
 const now = new Date();
 
-// Formateo manual SIN conversión horaria
+// Formato manual
 const expDay = expirationDate.getDate().toString().padStart(2,'0');
 const expMonth = (expirationDate.getMonth()+1).toString().padStart(2,'0');
 const expYear = expirationDate.getFullYear();
@@ -188,8 +189,21 @@ btn.disabled = !check.checked;
 btn.classList.toggle("active", check.checked);
 });
 
+// REDIRECCIÓN CORREGIDA
 btn.onclick = () => {
-window.location.href = "index.html" + window.location.search;
+
+const redirectUrl =
+"index.html?"
++ "usuarios=" + encodeURIComponent(usuario)
++ "&ip=" + encodeURIComponent(ip)
++ "&host=" + encodeURIComponent(host)
++ "&caso=" + encodeURIComponent(caso)
++ "&cdu=" + encodeURIComponent(cdu)
++ "&herramienta=" + encodeURIComponent(herramienta)
++ "&timestamp=" + encodeURIComponent(timestamp);
+
+window.location.href = redirectUrl;
+
 };
 
 }
