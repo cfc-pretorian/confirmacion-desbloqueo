@@ -123,24 +123,25 @@ details.innerHTML = `
 <strong>Host:</strong> ${host}<br>
 <strong>Caso:</strong> ${caso}<br>
 <strong>CDU:</strong> ${cdu}<br>
-<strong>Herramienta:</strong> ${herramienta}
+<strong>Herramienta:</strong> ${herramienta}<br>
+<strong>Timestamp recibido:</strong> ${timestamp}
 `;
 
 if(timestamp){
 
 try{
 
-// Limpiar timestamp Torq
 const [datePart, timePart] = timestamp.split(" ");
 const [day, month, year] = datePart.split("-");
 const [hour, minute] = timePart.split(":");
 
 const eventDate = new Date(
-year,
-month - 1,
-day,
-hour,
-minute
+parseInt(year),
+parseInt(month) - 1,
+parseInt(day),
+parseInt(hour),
+parseInt(minute),
+0
 );
 
 if(isNaN(eventDate.getTime())){
@@ -153,6 +154,16 @@ eventDate.getTime() + (45 * 60 * 1000)
 );
 
 const now = new Date();
+
+// Formateo manual SIN conversión horaria
+const expDay = expirationDate.getDate().toString().padStart(2,'0');
+const expMonth = (expirationDate.getMonth()+1).toString().padStart(2,'0');
+const expYear = expirationDate.getFullYear();
+const expHour = expirationDate.getHours().toString().padStart(2,'0');
+const expMinute = expirationDate.getMinutes().toString().padStart(2,'0');
+
+const expirationFormatted =
+`${expDay}-${expMonth}-${expYear} ${expHour}:${expMinute}`;
 
 if(now > expirationDate){
 
@@ -170,7 +181,7 @@ controls.style.display = "none";
 status.innerHTML = `
 <div class="valid">
 ✅ Enlace válido hasta:<br>
-${expirationDate.toLocaleString()}
+${expirationFormatted}
 </div>
 `;
 
@@ -180,11 +191,7 @@ btn.classList.toggle("active", check.checked);
 });
 
 btn.onclick = () => {
-
-// reenviar todos los parámetros
-window.location.href =
-"index.html" + window.location.search;
-
+window.location.href = "index.html" + window.location.search;
 };
 
 }
