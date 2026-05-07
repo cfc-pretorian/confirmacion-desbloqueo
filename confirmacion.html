@@ -111,6 +111,8 @@ const cdu = urlParams.get("cdu") || "";
 const herramienta = urlParams.get("herramienta") || "";
 const timestamp = urlParams.get("timestamp") || "";
 
+console.log("Herramienta recibida:", herramienta);
+
 // Elementos
 const check = document.getElementById("check");
 const btn = document.getElementById("btn");
@@ -231,7 +233,7 @@ status.innerHTML = `
 controls.style.display = "none";
 
 }
-console.log("Herramienta recibida:", herramienta);
+
 </script>
 
 </body>
