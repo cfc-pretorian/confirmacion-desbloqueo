@@ -72,7 +72,7 @@ ha sido aplicada correctamente.
 Caso: <strong id="caso"></strong><br>
 Usuario: <strong id="usuario"></strong><br>
 Host: <strong id="host"></strong><br>
-CDU: <strong id="cdu"></strong>
+CDU: <strong id="cdu"></strong><br>
 </div>
 
 <div id="redirect-msg" class="redirect">
@@ -93,15 +93,18 @@ const caso = params.get("caso") || "";
 const cdu = params.get("cdu") || "";
 const herramienta = params.get("herramienta") || "";
 const timestamp = params.get("timestamp") || "";
+const jefe = params.get("jefe") || "N/A";
 
 // Debug
 console.log("Herramienta enviada a Torq:", herramienta);
+console.log("Jefatura enviada a Torq:", jefe);
 
 // Mostrar datos
 document.getElementById("caso").textContent = caso || "No informado";
 document.getElementById("usuario").textContent = usuarios || "No informado";
 document.getElementById("host").textContent = host || "No informado";
 document.getElementById("cdu").textContent = cdu || "No informado";
+document.getElementById("jefe").textContent = jefe;
 
 // Construir URL webhook
 const webhookUrl =
@@ -112,7 +115,8 @@ const webhookUrl =
 + "&caso=" + encodeURIComponent(caso)
 + "&cdu=" + encodeURIComponent(cdu)
 + "&herramienta=" + encodeURIComponent(herramienta)
-+ "&timestamp=" + encodeURIComponent(timestamp);
++ "&timestamp=" + encodeURIComponent(timestamp)
++ "&jefe=" + encodeURIComponent(jefe);
 
 console.log("Redirigiendo a Torq:", webhookUrl);
 
