@@ -2,15 +2,75 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Confirmación</title>
+<title>Confirmación de Liberación</title>
 
 <style>
-body{font-family:Arial; background:#f4f7f9; text-align:center; padding:40px;}
-.card{background:#fff; padding:30px; border-radius:10px; max-width:500px; margin:auto;}
-.btn{background:#ccc; color:#666; padding:12px 18px; border:none; border-radius:8px; cursor:not-allowed;}
-.btn.active{background:#c62828; color:#fff; cursor:pointer;}
-</style>
+body{
+font-family:Arial, sans-serif;
+background:#f4f7f9;
+text-align:center;
+padding:40px;
+margin:0;
+}
 
+.card{
+background:#fff;
+padding:35px;
+border-radius:12px;
+max-width:600px;
+margin:auto;
+box-shadow:0 4px 18px rgba(0,0,0,.08);
+}
+
+h2{
+color:#222;
+}
+
+.info{
+background:#f8f9fa;
+padding:15px;
+border-radius:8px;
+margin:20px 0;
+text-align:left;
+font-size:14px;
+line-height:1.7;
+}
+
+.btn{
+background:#ccc;
+color:#666;
+padding:14px 24px;
+border:none;
+border-radius:8px;
+cursor:not-allowed;
+font-weight:bold;
+font-size:15px;
+}
+
+.btn.active{
+background:#c62828;
+color:#fff;
+cursor:pointer;
+}
+
+.expired{
+color:#c62828;
+font-weight:bold;
+margin:20px 0;
+font-size:16px;
+}
+
+.valid{
+color:#2e7d32;
+font-weight:bold;
+margin:20px 0;
+font-size:16px;
+}
+
+label{
+font-size:15px;
+}
+</style>
 </head>
 
 <body>
@@ -19,31 +79,132 @@ body{font-family:Arial; background:#f4f7f9; text-align:center; padding:40px;}
 
 <h2>Confirmación requerida</h2>
 
-<p>Debes confirmar antes de continuar.</p>
+<p>Debes confirmar antes de continuar con la liberación.</p>
 
+<div class="info" id="details"></div>
+
+<div id="status"></div>
+
+<div id="controls">
 <input type="checkbox" id="check">
-<label for="check">Confirmo validación</label>
+<label for="check">Confirmo validación operativa</label>
 
 <br><br>
 
-<button id="btn" class="btn" disabled>Continuar</button>
+<button id="btn" class="btn" disabled>
+Continuar
+</button>
+</div>
 
 </div>
 
 <script>
-const params = window.location.search;
 
+// Leer parámetros
+const urlParams = new URLSearchParams(window.location.search);
+
+const usuario = urlParams.get("usuarios") || "N/A";
+const host = urlParams.get("host") || "N/A";
+const caso = urlParams.get("caso") || "N/A";
+const cdu = urlParams.get("cdu") || "N/A";
+const herramienta = urlParams.get("herramienta") || "N/A";
+const timestamp = urlParams.get("timestamp");
+
+// Elementos
 const check = document.getElementById("check");
 const btn = document.getElementById("btn");
+const status = document.getElementById("status");
+const controls = document.getElementById("controls");
+const details = document.getElementById("details");
+
+// Mostrar info
+details.innerHTML = `
+<strong>Usuario:</strong> ${usuario}<br>
+<strong>Host:</strong> ${host}<br>
+<strong>Caso:</strong> ${caso}<br>
+<strong>CDU:</strong> ${cdu}<br>
+<strong>Herramienta:</strong> ${herramienta}
+`;
+
+if(timestamp){
+
+try{
+
+// Limpiar timestamp Torq
+const cleanTimestamp = timestamp.split(".")[0] + "Z";
+
+const eventDate = new Date(cleanTimestamp);
+
+if(isNaN(eventDate.getTime())){
+throw new Error("Timestamp inválido");
+}
+
+// Expira en 45 min
+const expirationDate = new Date(
+eventDate.getTime() + (45 * 60 * 1000)
+);
+
+const now = new Date();
+
+if(now > expirationDate){
+
+status.innerHTML = `
+<div class="expired">
+⛔ Este enlace expiró.<br><br>
+La ventana de liberación de 45 minutos ya fue superada.
+</div>
+`;
+
+controls.style.display = "none";
+
+}else{
+
+status.innerHTML = `
+<div class="valid">
+✅ Enlace válido hasta:<br>
+${expirationDate.toLocaleString()}
+</div>
+`;
 
 check.addEventListener("change", () => {
-  btn.disabled = !check.checked;
-  btn.classList.toggle("active", check.checked);
+btn.disabled = !check.checked;
+btn.classList.toggle("active", check.checked);
 });
 
 btn.onclick = () => {
-  window.location.href = "index.html" + params;
+
+// reenviar todos los parámetros
+window.location.href =
+"index.html" + window.location.search;
+
 };
+
+}
+
+}catch(error){
+
+status.innerHTML = `
+<div class="expired">
+⛔ Error procesando timestamp
+</div>
+`;
+
+controls.style.display = "none";
+
+}
+
+}else{
+
+status.innerHTML = `
+<div class="expired">
+⛔ No se recibió timestamp
+</div>
+`;
+
+controls.style.display = "none";
+
+}
+
 </script>
 
 </body>
