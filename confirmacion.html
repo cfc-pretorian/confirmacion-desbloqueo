@@ -131,8 +131,17 @@ if(timestamp){
 try{
 
 // Limpiar timestamp Torq
-const cleanTimestamp = timestamp.split(".")[0];
-const eventDate = new Date(cleanTimestamp);
+const [datePart, timePart] = timestamp.split(" ");
+const [day, month, year] = datePart.split("-");
+const [hour, minute] = timePart.split(":");
+
+const eventDate = new Date(
+year,
+month - 1,
+day,
+hour,
+minute
+);
 
 if(isNaN(eventDate.getTime())){
 throw new Error("Timestamp inválido");
