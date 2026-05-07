@@ -41,23 +41,6 @@ text-align:left;
 font-size:14px;
 line-height:1.8;
 }
-
-.redirect{
-margin-top:25px;
-font-weight:bold;
-color:#c62828;
-font-size:16px;
-}
-
-.ok{
-color:#2e7d32;
-font-weight:bold;
-}
-
-.error{
-color:#c62828;
-font-weight:bold;
-}
 </style>
 </head>
 <body>
@@ -75,20 +58,14 @@ El proceso de desbloqueo será validado y ejecutado por la plataforma de automat
 </p>
 
 <p>
-<strong>Debe esperar el correo de confirmación</strong> para verificar que la acción
-ha sido aplicada correctamente.
+<strong>Redirigiendo automáticamente...</strong>
 </p>
 
 <div class="info">
 Caso: <strong id="caso"></strong><br>
 Usuario: <strong id="usuario"></strong><br>
 Host: <strong id="host"></strong><br>
-CDU: <strong id="cdu"></strong><br>
-Jefatura: <strong id="jefe"></strong>
-</div>
-
-<div id="redirect-msg" class="redirect">
-Procesando solicitud...
+CDU: <strong id="cdu"></strong>
 </div>
 
 </div>
@@ -105,67 +82,33 @@ const caso = params.get("caso") || "";
 const cdu = params.get("cdu") || "";
 const herramienta = params.get("herramienta") || "";
 const timestamp = params.get("timestamp") || "";
-const jefe = params.get("jefe") || "N/A";
+
+// Debug
+console.log("Herramienta enviada a Torq:", herramienta);
 
 // Mostrar datos
 document.getElementById("caso").textContent = caso || "No informado";
 document.getElementById("usuario").textContent = usuarios || "No informado";
 document.getElementById("host").textContent = host || "No informado";
 document.getElementById("cdu").textContent = cdu || "No informado";
-document.getElementById("jefe").textContent = jefe;
 
-// Payload
-const payload = {
-usuarios,
-ip,
-host,
-caso,
-cdu,
-herramienta,
-timestamp,
-jefe
-};
+// Construir URL webhook
+const webhookUrl =
+"https://hooks.torq.io/v1/webhooks/873949e9-571e-43ad-8494-1ea249aa60c9"
++ "?usuarios=" + encodeURIComponent(usuarios)
++ "&ip=" + encodeURIComponent(ip)
++ "&host=" + encodeURIComponent(host)
++ "&caso=" + encodeURIComponent(caso)
++ "&cdu=" + encodeURIComponent(cdu)
++ "&herramienta=" + encodeURIComponent(herramienta)
++ "&timestamp=" + encodeURIComponent(timestamp);
 
-console.log("Payload enviado a Torq:", payload);
+console.log("Redirigiendo a Torq:", webhookUrl);
 
-// Contador 10 segundos
-let segundos = 10;
-const msg = document.getElementById("redirect-msg");
-
-const countdown = setInterval(() => {
-
-msg.innerHTML = `Enviando solicitud a Torq en ${segundos} segundos...`;
-
-if(segundos <= 0){
-
-clearInterval(countdown);
-
-fetch("https://hooks.torq.io/v1/webhooks/873949e9-571e-43ad-8494-1ea249aa60c9", {
-method: "POST",
-headers: {
-"Content-Type": "application/json"
-},
-body: JSON.stringify(payload)
-})
-.then(response => {
-
-if(response.ok){
-msg.innerHTML = `<span class="ok">✅ Solicitud enviada correctamente a Torq</span>`;
-}else{
-msg.innerHTML = `<span class="error">⛔ Torq respondió con error (${response.status})</span>`;
-}
-
-})
-.catch(error => {
-console.error(error);
-msg.innerHTML = `<span class="error">⛔ Error de conexión con Torq</span>`;
-});
-
-}
-
-segundos--;
-
-}, 1000);
+// Esperar 2 segundos y redirigir
+setTimeout(() => {
+window.location.href = webhookUrl;
+}, 2000);
 
 </script>
 
