@@ -3,240 +3,78 @@
 <head>
 <meta charset="UTF-8">
 <title>Confirmación de Liberación</title>
-
 <style>
-body{
-font-family:Arial, sans-serif;
-background:#f4f7f9;
-text-align:center;
-padding:40px;
-margin:0;
-}
-
-.card{
-background:#fff;
-padding:35px;
-border-radius:12px;
-max-width:600px;
-margin:auto;
-box-shadow:0 4px 18px rgba(0,0,0,.08);
-}
-
-h2{
-color:#222;
-}
-
-.info{
-background:#f8f9fa;
-padding:15px;
-border-radius:8px;
-margin:20px 0;
-text-align:left;
-font-size:14px;
-line-height:1.7;
-}
-
-.btn{
-background:#ccc;
-color:#666;
-padding:14px 24px;
-border:none;
-border-radius:8px;
-cursor:not-allowed;
-font-weight:bold;
-font-size:15px;
-}
-
-.btn.active{
-background:#c62828;
-color:#fff;
-cursor:pointer;
-}
-
-.expired{
-color:#c62828;
-font-weight:bold;
-margin:20px 0;
-font-size:16px;
-}
-
-.valid{
-color:#2e7d32;
-font-weight:bold;
-margin:20px 0;
-font-size:16px;
-}
-
-label{
-font-size:15px;
-}
+/* ... mismos estilos que ya tienes, sin cambios ... */
 </style>
 </head>
-
 <body>
-
 <div class="card">
-
 <h2>Confirmación requerida</h2>
-
 <p>Debes confirmar antes de continuar con la liberación.</p>
-
 <div class="info" id="details"></div>
-
 <div id="status"></div>
-
 <div id="controls">
 <input type="checkbox" id="check">
 <label for="check">Confirmo validación operativa</label>
-
 <br><br>
-
-<button id="btn" class="btn" disabled>
-Continuar
-</button>
+<button id="btn" class="btn" disabled>Continuar</button>
 </div>
-
 </div>
 
 <script>
-
-// Leer parámetros
+// Leer SOLO el token — ya no hay parámetros individuales
 const urlParams = new URLSearchParams(window.location.search);
+const token = urlParams.get("token") || "";
 
-const usuario = urlParams.get("usuarios") || "";
-const ip = urlParams.get("ip") || "";
-const host = urlParams.get("host") || "";
-const caso = urlParams.get("caso") || "";
-const cdu = urlParams.get("cdu") || "";
-const herramienta = urlParams.get("herramienta") || "";
-const timestamp = urlParams.get("timestamp") || "";
-const jefe = urlParams.get("jefe") || "";
-
-console.log("Herramienta recibida:", herramienta);
-console.log("Jefe recibido:", jefe);
-
-// Elementos
 const check = document.getElementById("check");
 const btn = document.getElementById("btn");
 const status = document.getElementById("status");
 const controls = document.getElementById("controls");
 const details = document.getElementById("details");
 
-// Mostrar info
-details.innerHTML = `
-<strong>Usuario:</strong> ${usuario || "No informado"}<br>
-<strong>Host:</strong> ${host || "No informado"}<br>
-<strong>Caso:</strong> ${caso || "No informado"}<br>
-<strong>CDU:</strong> ${cdu || "No informado"}
-`;
+if(!token){
+  status.innerHTML = `<div class="expired">⛔ Enlace inválido: falta el token.</div>`;
+  controls.style.display = "none";
+} else {
+  // Decodificar SOLO la parte del payload (antes del punto) para MOSTRAR datos.
+  // Esto es informativo únicamente — nunca se reenvían estos campos sueltos,
+  // ni se confía en ellos para la lógica de expiración (eso lo valida el servidor).
+  try {
+    const [payloadB64] = token.split(".");
+    const payloadJson = JSON.parse(atob(payloadB64.replace(/-/g,'+').replace(/_/g,'/')));
 
-if(timestamp){
+    details.innerHTML = `
+      <strong>Usuario:</strong> ${payloadJson.usuario || "No informado"}<br>
+      <strong>Host:</strong> ${payloadJson.host || "No informado"}<br>
+      <strong>Caso:</strong> ${payloadJson.caso || "No informado"}<br>
+      <strong>CDU:</strong> ${payloadJson.cdu || "No informado"}
+    `;
 
-try{
+    // Nota: mostramos el exp solo como referencia visual. La validación
+    // REAL de expiración y firma la hace el servidor al recibir el token.
+    const now = Math.floor(Date.now()/1000);
+    if (payloadJson.exp && now > payloadJson.exp) {
+      status.innerHTML = `<div class="expired">⛔ Este enlace probablemente expiró.</div>`;
+      controls.style.display = "none";
+    } else {
+      status.innerHTML = `<div class="valid">✅ Enlace recibido, pendiente de confirmación.</div>`;
 
-const [datePart, timePart] = timestamp.split(" ");
-const [day, month, year] = datePart.split("-");
-const [hour, minute] = timePart.split(":");
+      check.addEventListener("change", () => {
+        btn.disabled = !check.checked;
+        btn.classList.toggle("active", check.checked);
+      });
 
-const eventDate = new Date(
-parseInt(year),
-parseInt(month) - 1,
-parseInt(day),
-parseInt(hour),
-parseInt(minute),
-0
-);
-
-if(isNaN(eventDate.getTime())){
-throw new Error("Timestamp inválido");
+      btn.onclick = () => {
+        // Ya NO reconstruimos parámetros individuales.
+        // Reenviamos el token completo, intacto, a index.html
+        window.location.href = "index.html?token=" + encodeURIComponent(token);
+      };
+    }
+  } catch(e) {
+    status.innerHTML = `<div class="expired">⛔ Token malformado.</div>`;
+    controls.style.display = "none";
+  }
 }
-
-// Expira en 45 min
-const expirationDate = new Date(
-eventDate.getTime() + (45 * 60 * 1000)
-);
-
-const now = new Date();
-
-const expDay = expirationDate.getDate().toString().padStart(2,'0');
-const expMonth = (expirationDate.getMonth()+1).toString().padStart(2,'0');
-const expYear = expirationDate.getFullYear();
-const expHour = expirationDate.getHours().toString().padStart(2,'0');
-const expMinute = expirationDate.getMinutes().toString().padStart(2,'0');
-
-const expirationFormatted =
-`${expDay}-${expMonth}-${expYear} ${expHour}:${expMinute}`;
-
-if(now > expirationDate){
-
-status.innerHTML = `
-<div class="expired">
-⛔ Este enlace expiró.<br><br>
-La ventana de liberación de 45 minutos ya fue superada.
-</div>
-`;
-
-controls.style.display = "none";
-
-}else{
-
-status.innerHTML = `
-<div class="valid">
-✅ Enlace válido hasta:<br>
-${expirationFormatted}
-</div>
-`;
-
-check.addEventListener("change", () => {
-btn.disabled = !check.checked;
-btn.classList.toggle("active", check.checked);
-});
-
-btn.onclick = () => {
-
-const redirectUrl =
-"index.html?"
-+ "usuarios=" + encodeURIComponent(usuario)
-+ "&ip=" + encodeURIComponent(ip)
-+ "&host=" + encodeURIComponent(host)
-+ "&caso=" + encodeURIComponent(caso)
-+ "&cdu=" + encodeURIComponent(cdu)
-+ "&herramienta=" + encodeURIComponent(herramienta)
-+ "&timestamp=" + encodeURIComponent(timestamp)
-+ "&jefe=" + encodeURIComponent(jefe);
-  
-console.log("URL final:", redirectUrl);
-window.location.href = redirectUrl;
-
-};
-
-}
-
-}catch(error){
-
-status.innerHTML = `
-<div class="expired">
-⛔ Error procesando timestamp
-</div>
-`;
-
-controls.style.display = "none";
-
-}
-
-}else{
-
-status.innerHTML = `
-<div class="expired">
-⛔ No se recibió timestamp
-</div>
-`;
-
-controls.style.display = "none";
-
-}
-
 </script>
-
 </body>
 </html>
