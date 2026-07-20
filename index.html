@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>Solicitud enviada</title>
-
 <style>
 body{
 margin:0;
@@ -12,7 +11,6 @@ background:#f4f7f9;
 font-family:'Segoe UI', Arial, sans-serif;
 text-align:center;
 }
-
 .card{
 max-width:600px;
 margin:auto;
@@ -21,17 +19,14 @@ padding:40px;
 border-radius:10px;
 box-shadow:0 8px 24px rgba(15,23,42,0.08);
 }
-
 h2{
 color:#f39c12;
 }
-
 p{
 color:#374151;
 font-size:14px;
 line-height:1.6;
 }
-
 .info{
 margin-top:20px;
 background:#f8f9fa;
@@ -41,78 +36,69 @@ text-align:left;
 font-size:14px;
 line-height:1.8;
 }
+.error{
+color:#c62828;
+font-weight:bold;
+}
 </style>
 </head>
 <body>
-
 <div class="card">
-
 <h2>⚠️ Solicitud de desbloqueo enviada</h2>
-
 <p>
 La ejecución de la acción ha sido <strong>solicitada correctamente</strong>.
 </p>
-
 <p>
 El proceso de desbloqueo será validado y ejecutado por la plataforma de automatización.
 </p>
-
-<p>
-<strong>Redirigiendo automáticamente...</strong>
-</p>
-
-<div class="info">
-Caso: <strong id="caso"></strong><br>
-Usuario: <strong id="usuario"></strong><br>
-Host: <strong id="host"></strong><br>
-CDU: <strong id="cdu"></strong>
+<p id="status-msg"><strong>Redirigiendo automáticamente...</strong></p>
+<div class="info" id="details"></div>
 </div>
-
-</div>
-
 <script>
-
-// Leer parámetros
+// Leer SOLO el token — ya no hay parámetros individuales
 const params = new URLSearchParams(window.location.search);
+const token = params.get("token") || "";
 
-const usuarios = params.get("usuarios") || "";
-const ip = params.get("ip") || "";
-const host = params.get("host") || "";
-const caso = params.get("caso") || "";
-const cdu = params.get("cdu") || "";
-const herramienta = params.get("herramienta") || "";
-const timestamp = params.get("timestamp") || "";
-const jefe = params.get("jefe") || "";
+const detailsEl = document.getElementById("details");
+const statusEl = document.getElementById("status-msg");
 
-// Debug
-console.log("Herramienta enviada a Torq:", herramienta);
+if(!token){
+  statusEl.innerHTML = '<span class="error">⛔ Falta el token. Solicitud no enviada.</span>';
+} else {
 
-// Mostrar datos
-document.getElementById("caso").textContent = caso || "No informado";
-document.getElementById("usuario").textContent = usuarios || "No informado";
-document.getElementById("host").textContent = host || "No informado";
-document.getElementById("cdu").textContent = cdu || "No informado";
+  // Decodificar solo para MOSTRAR datos en pantalla (informativo).
+  // El servidor es quien realmente valida firma/expiración/uso.
+  try {
+    const [payloadB64] = token.split(".");
+    const payloadJson = JSON.parse(atob(payloadB64.replace(/-/g,'+').replace(/_/g,'/')));
 
-// Construir URL webhook
-const webhookUrl =
-"https://hooks.torq.io/v1/webhooks/873949e9-571e-43ad-8494-1ea249aa60c9"
-+ "?usuarios=" + encodeURIComponent(usuarios)
-+ "&ip=" + encodeURIComponent(ip)
-+ "&host=" + encodeURIComponent(host)
-+ "&caso=" + encodeURIComponent(caso)
-+ "&cdu=" + encodeURIComponent(cdu)
-+ "&herramienta=" + encodeURIComponent(herramienta)
-+ "&timestamp=" + encodeURIComponent(timestamp)
-+ "&jefe=" + encodeURIComponent(jefe);
+    detailsEl.innerHTML = `
+      Caso: <strong>${payloadJson.caso || "No informado"}</strong><br>
+      Usuario: <strong>${payloadJson.usuario || "No informado"}</strong><br>
+      Host: <strong>${payloadJson.host || "No informado"}</strong><br>
+      CDU: <strong>${payloadJson.cdu || "No informado"}</strong>
+    `;
+  } catch(e) {
+    detailsEl.innerHTML = '<span class="error">No se pudo leer el detalle del token.</span>';
+  }
 
-console.log("Redirigiendo a Torq:", webhookUrl);
-
-// Esperar 2 segundos y redirigir
-setTimeout(() => {
-window.location.href = webhookUrl;
-}, 2000);
-
+  // Llamar al webhook enviando SOLO el token, por POST (no GET con params sueltos)
+  fetch("https://hooks.torq.io/v1/webhooks/NUEVO_WEBHOOK_ID_AQUI", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: token })
+  })
+  .then(resp => {
+    if (resp.ok) {
+      statusEl.innerHTML = '<strong>✅ Solicitud procesada correctamente.</strong>';
+    } else {
+      statusEl.innerHTML = '<span class="error">⛔ El servidor rechazó la solicitud (token inválido, expirado o ya usado).</span>';
+    }
+  })
+  .catch(() => {
+    statusEl.innerHTML = '<span class="error">⛔ Error de conexión al procesar la solicitud.</span>';
+  });
+}
 </script>
-
 </body>
 </html>
